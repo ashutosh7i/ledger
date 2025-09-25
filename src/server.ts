@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express, Request, Response, NextFunction } from "express";
 import { config } from "@/configs/app.config";
 import {
   testConnection,
@@ -6,6 +6,9 @@ import {
   getPoolStatus,
   closePool,
 } from "@/services/database.service";
+import apiRouter from "@/routes";
+import { notFoundHandler, errorHandler } from "@/middlewares/auth.middleware";
+import { ensureDefaultApiKey } from "@/services/security.service";
 
 const app: Express = express();
 const port = config.port || 3000;
@@ -60,6 +63,20 @@ app.get("/", (_req: Request, res: Response) => {
   });
 });
 
+// Mount versioned API routes
+app.use("/api/v1", apiRouter);
+
+// 404 and error handlers (must be after routes)
+app.use(notFoundHandler);
+app.use(
+  errorHandler as unknown as (
+    err: any,
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => void
+);
+
 // Start server
 const startServer = async () => {
   try {
@@ -76,6 +93,13 @@ const startServer = async () => {
       );
     } else {
       console.log("✅[startup]: Database connection established");
+    }
+
+    // Ensure default API key exists for local/dev
+    try {
+      await ensureDefaultApiKey();
+    } catch {
+      /* ignore */
     }
 
     // Start HTTP server
