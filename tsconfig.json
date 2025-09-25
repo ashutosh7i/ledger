@@ -1,4 +1,5 @@
 {
+  "extends": "@tsconfig/node-lts/tsconfig.json",
   "compilerOptions": {
     // Language and Environment
     "target": "ES2022",
@@ -21,7 +22,7 @@
     
     // Emit
     "outDir": "./dist",
-    "rootDir": "./",
+    "rootDir": "./src",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -56,7 +57,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.test.ts",
     "**/*.spec.ts"
   ],
   "ts-node": {
