@@ -1,0 +1,31 @@
+{
+  "name": "uptut-assignment",
+  "version": "1.0.0",
+  "description": "Basic Ledger System - Double-entry bookkeeping backend with TypeScript",
+  "license": "ISC",
+  "author": "ashutosh7i",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "nodemon --exec tsx src/server.ts",
+    "dev:watch": "nodemon --watch src --ext ts --exec tsx src/server.ts",
+    "clean": "rimraf dist",
+    "type-check": "tsc --noEmit",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.5.2",
+    "nodemon": "^3.1.10",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
