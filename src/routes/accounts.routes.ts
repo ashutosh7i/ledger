@@ -6,6 +6,7 @@ import {
   createAccount,
   updateAccount,
   deleteAccount,
+  getAccountBalance,
 } from "@/controllers/accounts.controller";
 
 const router = Router();
@@ -16,5 +17,6 @@ router.get("/:id", getAccount);
 router.post("/", apiKeyAuth, createAccount);
 router.put("/:id", apiKeyAuth, updateAccount);
 router.delete("/:id", apiKeyAuth, deleteAccount);
+router.get("/:code/balance", getAccountBalance);
 
 export default router;

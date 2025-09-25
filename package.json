@@ -15,7 +15,8 @@
     "type-check": "tsc --noEmit",
     "db:init": "tsx scripts/init-db.ts",
     "db:init:force": "tsx scripts/init-db.ts --force",
-    "db:reset": "tsx scripts/reset-db.ts",
+  "db:reset": "tsx scripts/reset-db.ts",
+  "db:seed:scenario": "tsx scripts/seed-scenario.ts",
     "test": "jest",
     "test:watch": "jest --watch"
   },
