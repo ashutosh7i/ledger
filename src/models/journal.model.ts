@@ -1,9 +1,10 @@
 import { RowDataPacket } from "mysql2/promise";
+
 export interface JournalEntryRow extends RowDataPacket {
   id: number;
-  date: string; // YYYY-MM-DD
+  date: string;
   narration: string;
-  posted_at: string; // timestamp
+  posted_at: string | null;
   reverses_entry_id: number | null;
   created_at: string;
   updated_at: string;
@@ -15,8 +16,8 @@ export interface JournalLineRow extends RowDataPacket {
   account_id: number;
   debit_cents: number; // positive if debit, else 0
   credit_cents: number; // positive if credit, else 0
-  line_index: number;
   created_at: string;
+  index: number;
 }
 
 export interface CreateJournalLineDTO {
