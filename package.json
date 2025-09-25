@@ -8,16 +8,20 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "dev": "nodemon --exec tsx src/server.ts",
     "dev:watch": "nodemon --watch src --ext ts --exec tsx src/server.ts",
     "clean": "rimraf dist",
     "type-check": "tsc --noEmit",
+    "db:init": "tsx scripts/init-db.ts",
+    "db:init:force": "tsx scripts/init-db.ts --force",
+    "db:reset": "tsx scripts/reset-db.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "dotenv": "^17.2.2",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "mysql2": "^3.15.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
