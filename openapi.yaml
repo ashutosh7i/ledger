@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: Minimal Double-Entry Ledger API
+  version: 1.0.0
+  description: |
+    Minimal double-entry ledger backend for recording financial events as journal entries and producing accurate account balances and reports.
+
+    All endpoints require an API key via the `x-api-key` header for write operations. Idempotency for journal entry creation is supported via the `Idempotency-Key` header.
+servers:
+  - url: http://localhost:5000/api/v1/
+paths:
+  /accounts:
+    post:
+      summary: Create an account
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, name, type]
+              properties:
+                code:
+                  type: string
+                  example: "1001"
+                name:
+                  type: string
+                  example: "Cash"
+                type:
+                  type: string
+                  enum: [Asset, Liability, Equity, Revenue, Expense]
+                  example: Asset
+      responses:
+        "201":
+          description: Account created
+        "400":
+          description: Validation error
+        "409":
+          description: Account code already exists
+    get:
+      summary: List accounts
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [Asset, Liability, Equity, Revenue, Expense]
+          description: Filter by account type
+      responses:
+        "200":
+          description: List of accounts
+  /accounts/{code}/balance:
+    get:
+      summary: Get account balance as of a date
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: as_of
+          schema:
+            type: string
+            format: date
+          description: Date to calculate balance as of
+      responses:
+        "200":
+          description: Account balance
+        "404":
+          description: Account not found
+  /journal-entries:
+    post:
+      summary: Create and post a journal entry
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+          required: false
+          description: Idempotency key for safe retries
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [date, narration, lines]
+              properties:
+                date:
+                  type: string
+                  format: date
+                  example: "2025-01-15"
+                narration:
+                  type: string
+                  example: "Seed capital"
+                lines:
+                  type: array
+                  minItems: 2
+                  items:
+                    type: object
+                    required: [account_code]
+                    properties:
+                      account_code:
+                        type: string
+                        example: "1001"
+                      debit:
+                        type: integer
+                        minimum: 0
+                        example: 100000
+                      credit:
+                        type: integer
+                        minimum: 0
+                        example: 0
+                reverses_entry_id:
+                  type: integer
+                  nullable: true
+      responses:
+        "201":
+          description: Journal entry created
+        "400":
+          description: Validation error
+        "409":
+          description: Idempotency conflict
+  /journal-entries/{id}:
+    get:
+      summary: Fetch a journal entry by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Journal entry with lines
+        "404":
+          description: Not found
+  /reports/trial-balance:
+    get:
+      summary: Trial balance report for a date range
+      parameters:
+        - in: query
+          name: from
+          required: true
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: to
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Trial balance report
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key

@@ -1,5 +1,6 @@
 import { dbInit } from "@/services/database-init.service";
 import { testConnection, closePool } from "@/services/database.service";
+import { ensureDefaultApiKey } from "@/services/security.service";
 
 /**
  * Database reset script
@@ -34,6 +35,8 @@ async function resetDatabase() {
     console.log(
       "🚀[reset]: You can now start the application with 'npm run dev'"
     );
+    // Ensure default API key is set
+    await ensureDefaultApiKey();
   } catch (error) {
     console.error("❌[reset]: Database reset failed:", error);
     process.exit(1);

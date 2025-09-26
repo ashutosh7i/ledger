@@ -88,3 +88,110 @@ Understanding the rules of debit and credit is crucial for the ledger system. Be
 The goal is to build a system that automatically maintains the accuracy of debit and credit entries while managing all categories of accounts.
 
 ---
+
+## Problem Explanation
+
+A double-entry ledger is the foundation of accounting systems. Every financial event is recorded as a journal entry with at least two line items, ensuring total debits equal total credits. This system guarantees accurate balances for all accounts (assets, liabilities, equity, revenue, expenses) over time.
+
+## Approach
+
+- **Correctness first**: All business logic, validation, and edge cases are handled in code.
+- **Immutability**: Journal entries cannot be edited or deleted after posting. Corrections require reversal or adjustment entries.
+- **Time travel**: All balance and report endpoints support historical queries.
+- **Precision**: All money values use integer minor units (e.g., paise/cents).
+- **API-first**: Clean, documented REST API with OpenAPI schema.
+
+## Setup
+
+### Requirements
+
+- Node.js (v20+ recommended)
+- MySQL
+
+### Environment Variables
+
+Create a `.env` file with:
+
+```
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=youruser
+DB_PASSWORD=yourpassword
+DB_NAME=ledger
+API_KEY=your-api-key
+```
+
+### Install & Run
+
+```sh
+npm install
+npm run db:init      # Initializes DB schema
+npm run db:seed      # Seeds chart of accounts and starter scenario
+npm run dev          # Starts the server
+```
+
+## API Documentation
+
+See [`openapi.yaml`](./openapi.yaml) for the full OpenAPI schema, visit [http://localhost:5000/api-docs](http://localhost:5000/api-docs) or use the following curl examples:
+
+### Create Account
+
+```sh
+curl -X POST http://localhost:5000/api/v1/accounts \
+  -H 'x-api-key: <your-api-key>' \
+  -H 'Content-Type: application/json' \
+  -d '{"code":"1001","name":"Cash","type":"Asset"}'
+```
+
+### Post Journal Entry
+
+```sh
+curl -X POST http://localhost:5000/api/v1/journal-entries \
+  -H 'x-api-key: <your-api-key>' \
+  -H 'Idempotency-Key: d9e5e2ab-1' \
+  -H 'Content-Type: application/json' \
+  -d '{"date":"2025-01-15","narration":"Seed capital","lines":[{"account_code":"1001","debit":100000},{"account_code":"3001","credit":100000}]}'
+```
+
+### Trial Balance
+
+```sh
+curl 'http://localhost:5000/api/v1/reports/trial-balance?from=2025-01-01&to=2025-01-31'
+```
+
+## Assumptions & Trade-offs
+
+- Each account can only appear once per journal entry (no duplicate debit/credit for same account).
+- All amounts are in integer minor units (no floats).
+- Only a single currency is supported (INR by default).
+- No external accounting libraries are used for ledger logic.
+
+## Idempotency Implementation
+
+- Journal entry creation supports idempotency via the `Idempotency-Key` header. Duplicate requests with the same key and body are not duplicated.
+
+## Test Instructions
+
+- Run all tests:
+
+```sh
+npm test
+```
+
+- Coverage summary will be shown after tests complete.
+
+## Coverage Summary
+
+- All endpoints, edge cases, and business logic are covered, including reversal, idempotency, rounding, and time travel.
+
+## Starter Scenario
+
+The seed script creates:
+
+- Accounts: Cash (1001 Asset), Bank (1002 Asset), Sales (4001 Revenue), Capital (3001 Equity), Rent (5001 Expense)
+- Entries:
+  - Seed capital: Dr Cash 100,000; Cr Capital 100,000 (2025-01-01)
+  - Cash sale: Dr Cash 50,000; Cr Sales 50,000 (2025-01-05)
+  - Office rent: Dr Rent 20,000; Cr Cash 20,000 (2025-01-07)
+
+Trial balance for 2025-01-01..2025-01-31 will balance; Cash balance = 130,000; Sales = -50,000 (credit-normal), Rent = 20,000.

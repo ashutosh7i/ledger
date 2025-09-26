@@ -9,9 +9,12 @@ import {
 import apiRouter from "@/routes";
 import { notFoundHandler, errorHandler } from "@/middlewares/auth.middleware";
 import { ensureDefaultApiKey } from "@/services/security.service";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
 
 const app: Express = express();
 const port = config.port || 3000;
+const swaggerDocument = YAML.load("./openapi.yaml");
 
 // Middleware
 app.use(express.json());
@@ -62,6 +65,9 @@ app.get("/", (_req: Request, res: Response) => {
     documentation: "/api-docs",
   });
 });
+
+// Swagger API docs
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Mount versioned API routes
 app.use("/api/v1", apiRouter);

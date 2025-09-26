@@ -1,5 +1,6 @@
 import { dbInit } from "@/services/database-init.service";
 import { testConnection, closePool } from "@/services/database.service";
+import { ensureDefaultApiKey } from "@/services/security.service";
 
 /**
  * Database initialization script
@@ -41,7 +42,10 @@ async function initializeDatabase() {
 
     // Initialize database
     console.log("🔧[init]: Creating database tables...");
+
     await dbInit.initializeDatabase();
+    // Ensure default API key is set
+    await ensureDefaultApiKey();
 
     console.log("✅[init]: Database initialization completed successfully!");
     console.log(
