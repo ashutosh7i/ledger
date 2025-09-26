@@ -138,32 +138,11 @@ npm run dev          # Starts the server
 
 ## API Documentation
 
-See [`openapi.yaml`](./openapi.yaml) for the full OpenAPI schema, visit [http://localhost:5000/api-docs](http://localhost:5000/api-docs) or use the following curl examples:
+See [`openapi.yaml`](./openapi.yaml) for the full OpenAPI schema, visit [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
 
-### Create Account
+### video Demo
 
-```sh
-curl -X POST http://localhost:5000/api/v1/accounts \
-  -H 'x-api-key: <your-api-key>' \
-  -H 'Content-Type: application/json' \
-  -d '{"code":"1001","name":"Cash","type":"Asset"}'
-```
-
-### Post Journal Entry
-
-```sh
-curl -X POST http://localhost:5000/api/v1/journal-entries \
-  -H 'x-api-key: <your-api-key>' \
-  -H 'Idempotency-Key: d9e5e2ab-1' \
-  -H 'Content-Type: application/json' \
-  -d '{"date":"2025-01-15","narration":"Seed capital","lines":[{"account_code":"1001","debit":100000},{"account_code":"3001","credit":100000}]}'
-```
-
-### Trial Balance
-
-```sh
-curl 'http://localhost:5000/api/v1/reports/trial-balance?from=2025-01-01&to=2025-01-31'
-```
+[Ledger System Demo](https://drive.google.com/drive/folders/1HPpWAkjKY472hXqntZtZIqnGhrBqUe-P?usp=drive_link)
 
 ## Assumptions & Trade-offs
 
