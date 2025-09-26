@@ -51,6 +51,20 @@ paths:
       responses:
         "200":
           description: List of accounts
+  /accounts/{id}:
+    get:
+      summary: Get account by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Account details
+        "404":
+          description: Account not found
   /accounts/{code}/balance:
     get:
       summary: Get account balance as of a date
@@ -71,9 +85,9 @@ paths:
           description: Account balance
         "404":
           description: Account not found
-  /journal-entries:
+  /journal/journal-entries:
     post:
-      summary: Create and post a journal entry
+      summary: Create and post a journal entry (assignment path)
       security:
         - ApiKeyAuth: []
       parameters:
@@ -126,7 +140,7 @@ paths:
           description: Validation error
         "409":
           description: Idempotency conflict
-  /journal-entries/{id}:
+  /journal/journal-entries/{id}:
     get:
       summary: Fetch a journal entry by id
       parameters:
@@ -140,6 +154,25 @@ paths:
           description: Journal entry with lines
         "404":
           description: Not found
+  /reports/trial-balance:
+    get:
+      summary: Trial balance report for a date range
+      parameters:
+        - in: query
+          name: from
+          required: true
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: to
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Trial balance report
   /reports/trial-balance:
     get:
       summary: Trial balance report for a date range

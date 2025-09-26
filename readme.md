@@ -70,6 +70,7 @@ Understanding the rules of debit and credit is crucial for the ledger system. Be
 ### Explanations:
 
 1. **Assets & Expenses**:
+
    - **Increase**: When **assets** (like cash, machines, etc.) or **expenses** (like rent, salaries, etc.) increase, the **Debit** is recorded as an increase, and the **Credit** is recorded as a decrease.
    - **Decrease**: When **assets** or **expenses** decrease, the **Credit** is recorded as an increase, and the **Debit** is recorded as a decrease.
 
@@ -78,6 +79,7 @@ Understanding the rules of debit and credit is crucial for the ledger system. Be
    - **Decrease**: When **liabilities** or **revenue** decrease, **Debit** increases, and **Credit** decreases.
 
 ### Summary:
+
 - **Asset & Expense increases** → **Debit** ↑, **Credit** ↓
 - **Liability, Revenue, & Capital increases** → **Credit** ↑, **Debit** ↓
 - **Asset & Expense decreases** → **Debit** ↓, **Credit** ↑
@@ -178,6 +180,12 @@ curl 'http://localhost:5000/api/v1/reports/trial-balance?from=2025-01-01&to=2025
 npm test
 ```
 
+- More interactive tests, run with:
+
+```sh
+npm run test:new
+```
+
 - Coverage summary will be shown after tests complete.
 
 ## Coverage Summary
@@ -195,3 +203,324 @@ The seed script creates:
   - Office rent: Dr Rent 20,000; Cr Cash 20,000 (2025-01-07)
 
 Trial balance for 2025-01-01..2025-01-31 will balance; Cash balance = 130,000; Sales = -50,000 (credit-normal), Rent = 20,000.
+
+## Interactive test output
+
+```sh
+$ npm run test:new 
+```
+
+output:
+
+```sh
+S D:\Project> npm run test:new
+
+> Project@1.0.0 test:new
+> node test.js
+
+🔹 Starting Ledger API tests...
+
+=== Create account Cash ===
+ {
+  data: {
+    id: 13,
+    code: '3100',
+    name: 'Cash',
+    type: 'Asset',
+    created_at: '2025-09-25T20:05:01.000Z',
+    updated_at: '2025-09-25T20:05:01.000Z'
+  }
+}
+✅ Account created: Cash (Code: 3100)
+
+=== Create account Bank ===
+ {
+  data: {
+    id: 14,
+    code: '7221',
+    name: 'Bank',
+    type: 'Asset',
+    created_at: '2025-09-25T20:05:01.000Z',
+    updated_at: '2025-09-25T20:05:01.000Z'
+  }
+}
+✅ Account created: Bank (Code: 7221)
+
+=== Create account Capital ===
+ {
+  data: {
+    id: 15,
+    code: '4789',
+    name: 'Capital',
+    type: 'Equity',
+    created_at: '2025-09-25T20:05:02.000Z',
+    updated_at: '2025-09-25T20:05:02.000Z'
+  }
+}
+✅ Account created: Capital (Code: 4789)
+
+=== Create account Sales ===
+ {
+  data: {
+    id: 16,
+    code: '9059',
+    name: 'Sales',
+    type: 'Revenue',
+    created_at: '2025-09-25T20:05:02.000Z',
+    updated_at: '2025-09-25T20:05:02.000Z'
+  }
+}
+✅ Account created: Sales (Code: 9059)
+
+=== Create account Rent ===
+ {
+  data: {
+    id: 17,
+    code: '1193',
+    name: 'Rent',
+    type: 'Expense',
+    created_at: '2025-09-25T20:05:02.000Z',
+    updated_at: '2025-09-25T20:05:02.000Z'
+  }
+}
+✅ Account created: Rent (Code: 1193)
+
+=== Post journal entry: Seed capital ===
+ {
+  data: {
+    id: 7,
+    date: '2024-12-31T18:30:00.000Z',
+    narration: 'Seed capital',
+    posted_at: '2025-09-25T20:05:03.000Z',
+    reverses_entry_id: null,
+    created_at: '2025-09-25T20:05:03.000Z',
+    updated_at: '2025-09-25T20:05:03.000Z'
+  }
+}
+✅ Journal entry posted: Seed capital
+
+=== Post journal entry: Cash sale ===
+ {
+  data: {
+    id: 8,
+    date: '2025-01-04T18:30:00.000Z',
+    narration: 'Cash sale',
+    posted_at: '2025-09-25T20:05:04.000Z',
+    reverses_entry_id: null,
+    created_at: '2025-09-25T20:05:04.000Z',
+    updated_at: '2025-09-25T20:05:04.000Z'
+  }
+}
+✅ Journal entry posted: Cash sale
+
+=== Post journal entry: Office rent ===
+ {
+  data: {
+    id: 9,
+    date: '2025-01-06T18:30:00.000Z',
+    narration: 'Office rent',
+    posted_at: '2025-09-25T20:05:04.000Z',
+    reverses_entry_id: null,
+    created_at: '2025-09-25T20:05:04.000Z',
+    updated_at: '2025-09-25T20:05:04.000Z'
+  }
+}
+✅ Journal entry posted: Office rent
+
+=== Fetch journal entry ID 7 ===
+ {
+  data: {
+    id: 7,
+    date: '2024-12-31T18:30:00.000Z',
+    narration: 'Seed capital',
+    posted_at: '2025-09-25T20:05:03.000Z',
+    reverses_entry_id: null,
+    created_at: '2025-09-25T20:05:03.000Z',
+    updated_at: '2025-09-25T20:05:03.000Z',
+    lines: [ [Object], [Object] ]
+  }
+}
+✅ Fetched journal entry ID 7
+
+=== Fetch journal entry ID 8 ===
+ {
+  data: {
+    id: 8,
+    date: '2025-01-04T18:30:00.000Z',
+    narration: 'Cash sale',
+    posted_at: '2025-09-25T20:05:04.000Z',
+    reverses_entry_id: null,
+    created_at: '2025-09-25T20:05:04.000Z',
+    updated_at: '2025-09-25T20:05:04.000Z',
+    lines: [ [Object], [Object] ]
+  }
+}
+✅ Fetched journal entry ID 8
+
+=== Fetch journal entry ID 9 ===
+ {
+  data: {
+    id: 9,
+    date: '2025-01-06T18:30:00.000Z',
+    narration: 'Office rent',
+    posted_at: '2025-09-25T20:05:04.000Z',
+    reverses_entry_id: null,
+    created_at: '2025-09-25T20:05:04.000Z',
+    updated_at: '2025-09-25T20:05:04.000Z',
+    lines: [ [Object], [Object] ]
+  }
+}
+✅ Fetched journal entry ID 9
+
+🔹 Checking account balances as of 2025-01-31
+
+=== Cash balance ===
+ {
+  account: { code: '3100', name: 'Cash', type: 'Asset' },
+  as_of: '2025-01-31',
+  debits: 150000,
+  credits: 20000,
+  balance: 130000
+}
+✅ Balance for Cash: 130000
+
+=== Bank balance ===
+ {
+  account: { code: '7221', name: 'Bank', type: 'Asset' },
+  as_of: '2025-01-31',
+  debits: 0,
+  credits: 0,
+  balance: 0
+}
+✅ Balance for Bank: 0
+
+=== Capital balance ===
+ {
+  account: { code: '4789', name: 'Capital', type: 'Equity' },
+  as_of: '2025-01-31',
+  debits: 0,
+  credits: 100000,
+  balance: -100000
+}
+✅ Balance for Capital: -100000
+
+=== Sales balance ===
+ {
+  account: { code: '9059', name: 'Sales', type: 'Revenue' },
+  as_of: '2025-01-31',
+  debits: 0,
+  credits: 50000,
+  balance: -50000
+}
+✅ Balance for Sales: -50000
+
+=== Rent balance ===
+ {
+  account: { code: '1193', name: 'Rent', type: 'Expense' },
+  as_of: '2025-01-31',
+  debits: 20000,
+  credits: 0,
+  balance: 20000
+}
+✅ Balance for Rent: 20000
+
+=== Trial balance 2025-01-01 to 2025-01-31 ===
+ {
+  from: '2025-01-01',
+  to: '2025-01-31',
+  accounts: [
+    { code: '1001', name: 'Cash', debits: 0, credits: 0, balance: 0 },
+    {
+      code: '1050',
+      name: 'Capital',
+      debits: 0,
+      credits: 100000,
+      balance: -100000
+    },
+    {
+      code: '1193',
+      name: 'Rent',
+      debits: 20000,
+      credits: 0,
+      balance: 20000
+    },
+    { code: '1945', name: 'Bank', debits: 0, credits: 0, balance: 0 },
+    {
+      code: '3100',
+      name: 'Cash',
+      debits: 150000,
+      credits: 20000,
+      balance: 130000
+    },
+    {
+      code: '3489',
+      name: 'Capital',
+      debits: 0,
+      credits: 100000,
+      balance: -100000
+    },
+    { code: '4001', name: 'Sales', debits: 0, credits: 0, balance: 0 },
+    {
+      code: '4371',
+      name: 'Cash',
+      debits: 150000,
+      credits: 20000,
+      balance: 130000
+    },
+    {
+      code: '4789',
+      name: 'Capital',
+      debits: 0,
+      credits: 100000,
+      balance: -100000
+    },
+    {
+      code: '4962',
+      name: 'Cash',
+      debits: 150000,
+      credits: 20000,
+      balance: 130000
+    },
+    {
+      code: '5897',
+      name: 'Sales',
+      debits: 0,
+      credits: 50000,
+      balance: -50000
+    },
+    {
+      code: '6315',
+      name: 'Rent',
+      debits: 20000,
+      credits: 0,
+      balance: 20000
+    },
+    { code: '7221', name: 'Bank', debits: 0, credits: 0, balance: 0 },
+    {
+      code: '8295',
+      name: 'Sales',
+      debits: 0,
+      credits: 50000,
+      balance: -50000
+    },
+    {
+      code: '9059',
+      name: 'Sales',
+      debits: 0,
+      credits: 50000,
+      balance: -50000
+    },
+    {
+      code: '9276',
+      name: 'Rent',
+      debits: 20000,
+      credits: 0,
+      balance: 20000
+    },
+    { code: '9501', name: 'Bank', debits: 0, credits: 0, balance: 0 } 
+  ],
+  totals: { debits: 510000, credits: 510000 }
+}
+
+✅ Trial balance is correct: Debits = Credits = 510000
+```

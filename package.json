@@ -18,7 +18,7 @@
     "db:reset": "tsx src/scripts/reset-db.ts",
     "db:seed:scenario": "tsx src/scripts/seed-scenario.ts",
     "test": "jest --detectOpenHandles",
-    "test:watch": "jest --watch"
+    "test:new": "node test.js"
   },
   "dependencies": {
     "@tsconfig/node-lts": "^22.0.2",

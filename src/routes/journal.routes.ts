@@ -8,8 +8,6 @@ import {
 
 const router = Router();
 
-router.post("/entries", apiKeyAuth, idempotencyMiddleware, createJournalEntry);
-// Assignment path alias
 router.post(
   "/journal-entries",
   apiKeyAuth,
