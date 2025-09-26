@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ledger SaaS Demo</title>
+  <style>
+    body { background: #f4f3ef; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }
+    .container { max-width: 900px; margin: 2rem auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 24px #0002; padding: 2rem 2.5rem; }
+    h1 { text-align: center; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.5em; }
+    .ledger-table { width: 100%; border-collapse: collapse; margin: 2rem 0; background: #fcfcfa; box-shadow: 0 1px 4px #0001; }
+    .ledger-table th, .ledger-table td { border-bottom: 1px solid #e0e0e0; padding: 0.7em 0.5em; text-align: left; }
+    .ledger-table th { background: #f7f7f7; font-weight: 600; }
+    .ledger-table tr:last-child td { border-bottom: none; }
+    .debit { color: #2e7d32; font-weight: 500; }
+    .credit { color: #c62828; font-weight: 500; }
+    .balance { font-weight: 600; }
+    .entry-form { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 2rem; }
+    .entry-form > div { flex: 1 1 200px; }
+    label { display: block; margin-bottom: 0.3em; font-size: 0.97em; }
+    input, select, textarea { width: 100%; padding: 0.5em; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 1em; font-size: 1em; }
+    button { background: #1976d2; color: #fff; border: none; border-radius: 4px; padding: 0.7em 1.5em; font-size: 1em; cursor: pointer; transition: background 0.2s; }
+    button:hover { background: #125ea2; }
+    .trial-summary { background: #f7f7f7; border-radius: 6px; padding: 1em; margin-bottom: 2em; display: flex; gap: 2em; justify-content: center; }
+    .trial-summary div { font-size: 1.1em; }
+    .error { color: #c62828; margin: 1em 0; }
+    .success { color: #2e7d32; margin: 1em 0; }
+    .ledger-title { font-size: 1.3em; margin-bottom: 0.5em; }
+    .small { font-size: 0.95em; color: #888; }
+    @media (max-width: 700px) {
+      .container { padding: 1rem 0.5rem; }
+      .entry-form { flex-direction: column; gap: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📒 Ledger SaaS Demo</h1>
+    <div class="trial-summary" id="trialSummary"></div>
+    <div class="ledger-title">Journal Entries <span class="small" id="entryCount"></span></div>
+    <table class="ledger-table" id="ledgerTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Narration</th>
+          <th>Account</th>
+          <th>Debit</th>
+          <th>Credit</th>
+        </tr>
+      </thead>
+      <tbody id="ledgerBody"></tbody>
+    </table>
+    <div class="entry-form">
+      <div>
+        <label>Date
+          <input id="jeDate" type="date" required />
+        </label>
+        <label>Narration
+          <input id="jeNarration" required />
+        </label>
+      </div>
+      <div>
+        <label>Dual Entry</label>
+        <table id="dualEntryTable" style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="background:#f7f7f7;">
+              <th style="padding:0.3em;">Debit Account</th>
+              <th style="padding:0.3em;">Amount</th>
+              <th></th>
+              <th style="padding:0.3em;">Credit Account</th>
+              <th style="padding:0.3em;">Amount</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="dualEntryBody"></tbody>
+        </table>
+        <button type="button" id="addDualRowBtn" style="margin-top:0.5em;">+ Add Row</button>
+      </div>
+      <div style="align-self: flex-end;">
+        <button id="postEntryBtn">Post Entry</button>
+        <div id="entryMsg"></div>
+      </div>
+    </div>
+
+    <div class="ledger-title" style="margin-top:2em;">Accounts</div>
+    <div class="entry-form" style="margin-bottom:1em;">
+      <div>
+        <label>Code
+          <input id="accCode" placeholder="e.g. 1001" />
+        </label>
+      </div>
+      <div>
+        <label>Name
+          <input id="accName" placeholder="e.g. Cash" />
+        </label>
+      </div>
+      <div>
+        <label>Type
+          <select id="accType">
+            <option>Asset</option>
+            <option>Liability</option>
+            <option>Equity</option>
+            <option>Revenue</option>
+            <option>Expense</option>
+          </select>
+        </label>
+      </div>
+      <div style="align-self: flex-end;">
+        <button id="createAccBtn">Create Account</button>
+        <div id="accMsg"></div>
+      </div>
+    </div>
+    <table class="ledger-table" id="accountsTable">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="accountsBody"></tbody>
+    </table>
+    <div class="ledger-title">Account Balances</div>
+    <table class="ledger-table" id="balanceTable">
+      <thead>
+        <tr>
+          <th>Account</th>
+          <th>Type</th>
+          <th>Balance</th>
+        </tr>
+      </thead>
+      <tbody id="balanceBody"></tbody>
+    </table>
+  </div>
+  <script>
+    const API_URL = '/api/v1';
+    const API_KEY = 'dev-api-key-123';
+    function getHeaders() {
+      return {
+        'x-api-key': API_KEY,
+        'Content-Type': 'application/json',
+      };
+    }
+    function formatMoney(val) {
+      return val ? val.toLocaleString() : '';
+    }
+    async function fetchTrialBalance() {
+      const today = new Date().toISOString().slice(0, 10);
+      const url = `${API_URL}/reports/trial-balance?from=2020-01-01&to=${today}`;
+      const res = await fetch(url, { headers: getHeaders() });
+      return res.json();
+    }
+    async function fetchAccounts() {
+      const res = await fetch(`${API_URL}/accounts`, { headers: getHeaders() });
+      return res.json();
+    }
+
+    async function renderAccounts() {
+      const accounts = await fetchAccounts();
+      const body = document.getElementById('accountsBody');
+      if (!accounts.data || !accounts.data.length) {
+        body.innerHTML = '<tr><td colspan="4">No accounts found</td></tr>';
+        return;
+      }
+      body.innerHTML = '';
+      accounts.data.forEach(acc => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span class="acc-code">${acc.code}</span></td>
+          <td><span class="acc-name">${acc.name}</span></td>
+          <td><span class="acc-type">${acc.type}</span></td>
+          <td>
+            <button type="button" class="editAccBtn" style="background:#ffc107;color:#333;">Edit</button>
+            <button type="button" class="delAccBtn" style="background:#c62828;">Delete</button>
+          </td>
+        `;
+        // Edit button
+        tr.querySelector('.editAccBtn').onclick = () => {
+          document.getElementById('accCode').value = acc.code;
+          document.getElementById('accName').value = acc.name;
+          document.getElementById('accType').value = acc.type;
+          document.getElementById('createAccBtn').textContent = 'Update Account';
+          document.getElementById('createAccBtn').dataset.editing = '1';
+        };
+        // Delete button
+        tr.querySelector('.delAccBtn').onclick = async () => {
+          if (!confirm(`Delete account ${acc.code}?`)) return;
+          const res = await fetch(`${API_URL}/accounts/${acc.code}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+          });
+          if (res.ok) {
+            renderAccounts();
+            renderBalances();
+            renderLedger();
+          } else {
+            alert('Failed to delete account');
+          }
+        };
+        body.appendChild(tr);
+      });
+    }
+
+    document.getElementById('createAccBtn').onclick = async () => {
+      const code = document.getElementById('accCode').value.trim();
+      const name = document.getElementById('accName').value.trim();
+      const type = document.getElementById('accType').value;
+      if (!code || !name) {
+        document.getElementById('accMsg').innerHTML = '<span class="error">Code and Name required</span>';
+        return;
+      }
+      const editing = document.getElementById('createAccBtn').dataset.editing;
+      let method = 'POST', url = `${API_URL}/accounts`;
+      let body = JSON.stringify({ code, name, type });
+      if (editing) {
+        method = 'PUT';
+        url = `${API_URL}/accounts/${code}`;
+      }
+      const res = await fetch(url, {
+        method,
+        headers: getHeaders(),
+        body
+      });
+      if (res.ok) {
+        document.getElementById('accMsg').innerHTML = `<span class="success">${editing ? 'Updated' : 'Created'}!</span>`;
+        document.getElementById('createAccBtn').textContent = 'Create Account';
+        document.getElementById('createAccBtn').dataset.editing = '';
+        document.getElementById('accCode').value = '';
+        document.getElementById('accName').value = '';
+        renderAccounts();
+        renderBalances();
+      } else {
+        const data = await res.json();
+        document.getElementById('accMsg').innerHTML = `<span class="error">${data.error || 'Failed'}</span>`;
+      }
+    };
+    async function fetchJournalEntries() {
+      // No direct endpoint, so fetch trial balance and reconstruct
+      const tb = await fetchTrialBalance();
+      if (!tb.entries) return [];
+      // Flatten entries for table
+      return tb.entries.flatMap(entry =>
+        entry.lines.map(line => ({
+          date: entry.date,
+          narration: entry.narration,
+          account: line.account_code,
+          debit: line.debit,
+          credit: line.credit
+        }))
+      );
+    }
+    async function fetchBalances() {
+      const accounts = await fetchAccounts();
+      const today = new Date().toISOString().slice(0, 10);
+      const balances = await Promise.all(
+        (accounts.data || []).map(async acc => {
+          const res = await fetch(`${API_URL}/accounts/${acc.code}/balance?as_of=${today}`, { headers: getHeaders() });
+          const bal = await res.json();
+          return { ...acc, balance: bal.balance };
+        })
+      );
+      return balances;
+    }
+    async function renderLedger() {
+      const ledgerBody = document.getElementById('ledgerBody');
+      ledgerBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
+      const entries = await fetchJournalEntries();
+      document.getElementById('entryCount').textContent = `(${entries.length} lines)`;
+      ledgerBody.innerHTML = entries.map(e => `
+        <tr>
+          <td>${e.date}</td>
+          <td>${e.narration}</td>
+          <td>${e.account}</td>
+          <td class="debit">${e.debit ? formatMoney(e.debit) : ''}</td>
+          <td class="credit">${e.credit ? formatMoney(e.credit) : ''}</td>
+        </tr>
+      `).join('');
+    }
+    async function renderBalances() {
+      const balanceBody = document.getElementById('balanceBody');
+      balanceBody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+      const balances = await fetchBalances();
+      balanceBody.innerHTML = balances.map(acc => `
+        <tr>
+          <td>${acc.name} (${acc.code})</td>
+          <td>${acc.type}</td>
+          <td class="balance">${formatMoney(acc.balance)}</td>
+        </tr>
+      `).join('');
+    }
+    async function renderTrialSummary() {
+      const trial = await fetchTrialBalance();
+      const el = document.getElementById('trialSummary');
+      if (trial.totals) {
+        el.innerHTML = `<div><b>Debits:</b> ${formatMoney(trial.totals.debits)}</div><div><b>Credits:</b> ${formatMoney(trial.totals.credits)}</div>`;
+      } else {
+        el.innerHTML = '<span class="error">Could not load trial balance</span>';
+      }
+    }
+    // Dual entry editor logic
+    let accountOptions = [];
+    async function updateAccountOptions() {
+      const accounts = await fetchAccounts();
+      accountOptions = (accounts.data || []).map(acc => `<option value="${acc.code}">${acc.name} (${acc.code})</option>`);
+    }
+    function makeDualRow(row = {}) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><select class="dual-debit-account"><option value=""></option>${accountOptions.join('')}</select></td>
+        <td><input type="number" class="dual-debit-amt" value="${row.debit || ''}" min="0" step="any" style="width:100%;" /></td>
+        <td></td>
+        <td><select class="dual-credit-account"><option value=""></option>${accountOptions.join('')}</select></td>
+        <td><input type="number" class="dual-credit-amt" value="${row.credit || ''}" min="0" step="any" style="width:100%;" /></td>
+        <td><button type="button" class="removeDualBtn" style="color:#c62828; background:none; border:none; font-size:1.2em;">&times;</button></td>
+      `;
+      if (row.debit_account) tr.querySelector('.dual-debit-account').value = row.debit_account;
+      if (row.credit_account) tr.querySelector('.dual-credit-account').value = row.credit_account;
+      tr.querySelector('.removeDualBtn').onclick = () => tr.remove();
+      return tr;
+    }
+    function addDualRow(row) {
+      document.getElementById('dualEntryBody').appendChild(makeDualRow(row));
+    }
+    document.getElementById('addDualRowBtn').onclick = () => addDualRow();
+
+    // Replace old line editor with dual entry on load
+    async function setupDualEntry() {
+      await updateAccountOptions();
+      document.getElementById('dualEntryBody').innerHTML = '';
+      addDualRow();
+      addDualRow();
+    }
+    setupDualEntry();
+
+    document.getElementById('createAccBtn').onclick = async () => {
+      // ...existing code...
+      await updateAccountOptions();
+    };
+
+    document.getElementById('postEntryBtn').onclick = async () => {
+      const date = document.getElementById('jeDate').value;
+      const narration = document.getElementById('jeNarration').value;
+      // Build lines from dual entry table
+      const lines = [];
+      Array.from(document.querySelectorAll('#dualEntryBody tr')).forEach(tr => {
+        const debitAcc = tr.querySelector('.dual-debit-account').value;
+        const debitAmt = tr.querySelector('.dual-debit-amt').value;
+        const creditAcc = tr.querySelector('.dual-credit-account').value;
+        const creditAmt = tr.querySelector('.dual-credit-amt').value;
+        if (debitAcc && debitAmt) lines.push({ account_code: debitAcc, debit: parseFloat(debitAmt) });
+        if (creditAcc && creditAmt) lines.push({ account_code: creditAcc, credit: parseFloat(creditAmt) });
+      });
+      if (!lines.length) {
+        document.getElementById('entryMsg').innerHTML = '<span class="error">At least one valid debit or credit is required</span>';
+        return;
+      }
+      try {
+        const res = await fetch(`${API_URL}/journal/journal-entries`, {
+          method: 'POST',
+          headers: { ...getHeaders(), 'Idempotency-Key': 'demo-' + Math.random() },
+          body: JSON.stringify({ date, narration, lines })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('entryMsg').innerHTML = '<span class="success">Entry posted!</span>';
+          await renderLedger();
+          await renderBalances();
+          await renderTrialSummary();
+          // Clear dual entry rows
+          document.getElementById('dualEntryBody').innerHTML = '';
+          addDualRow();
+          addDualRow();
+        } else {
+          document.getElementById('entryMsg').innerHTML = `<span class="error">${data.error || 'Failed to post entry'}</span>`;
+        }
+      } catch (err) {
+        document.getElementById('entryMsg').innerHTML = `<span class="error">${err.message}</span>`;
+      }
+    };
+  // Initial render
+  renderLedger();
+  renderBalances();
+  renderTrialSummary();
+  renderAccounts();
+  </script>
+</body>
+</html>

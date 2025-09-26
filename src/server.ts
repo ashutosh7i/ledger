@@ -58,13 +58,14 @@ app.get("/health", async (_req: Request, res: Response) => {
   }
 });
 
-// Root endpoint
+// Serve static HTML tester at root
+import path from "path";
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(path.join(__dirname, "../public")));
 app.get("/", (_req: Request, res: Response) => {
-  res.json({
-    message: "Welcome to the Ledger System API",
-    version: "1.0.0",
-    documentation: "/api-docs",
-  });
+  res.sendFile(path.join(__dirname, "../public/index.html"));
 });
 
 // Swagger API docs

@@ -132,6 +132,10 @@ npm run db:seed      # Seeds chart of accounts and starter scenario
 npm run dev          # Starts the server
 ```
 
+## Demo
+
+- Visit [http://localhost:5000](http://localhost:5000) for a simple Ledger Demo application.
+
 ## API Documentation
 
 See [`openapi.yaml`](./openapi.yaml) for the full OpenAPI schema, visit [http://localhost:5000/api-docs](http://localhost:5000/api-docs) or use the following curl examples:
