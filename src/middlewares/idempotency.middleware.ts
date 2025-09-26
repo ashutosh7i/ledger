@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { hashRequestBody } from "@/utils/request-hash";
 import { sha256 } from "@/utils/hash";
 import { idempotencyService } from "@/services/idempotency.service";
+import logger from "@/utils/logger";
 
 // Simple idempotency using Idempotency-Key header; scoped by API key hash for multi-tenant isolation
 export async function idempotencyMiddleware(
@@ -32,6 +33,9 @@ export async function idempotencyMiddleware(
         next();
         return;
       } else {
+        logger.warn(
+          `Idempotency key conflict for key ${idempotencyKey} with different request body`
+        );
         res
           .status(409)
           .json({

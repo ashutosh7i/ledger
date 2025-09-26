@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { sha256 } from "@/utils/hash";
 import { findWhere, updateWhere } from "@/repositories/base.repository";
 import { ApiKeyRow } from "@/models/security.model";
+import logger from "@/utils/logger";
 
 // Simple API key auth using x-api-key header. We store only hash in DB.
 export async function apiKeyAuth(
@@ -37,6 +38,7 @@ export async function apiKeyAuth(
     next();
     return;
   } catch (err) {
+    logger.error("[auth.middleware]: Error in API key authentication", err);
     next(err);
     return;
   }
@@ -52,8 +54,7 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ): void {
-  // eslint-disable-next-line no-console
-  console.error("[error]", err);
+  logger.error("[error]", err);
   const status = typeof err?.status === "number" ? err.status : 500;
   res.status(status).json({ error: err?.message || "Internal Server Error" });
 }

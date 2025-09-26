@@ -11,6 +11,7 @@ import { notFoundHandler, errorHandler } from "@/middlewares/auth.middleware";
 import { ensureDefaultApiKey } from "@/services/security.service";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
+import logger from "@/utils/logger";
 
 const app: Express = express();
 const port = config.port || 3000;
@@ -86,19 +87,19 @@ app.use(
 // Start server
 const startServer = async () => {
   try {
-    console.log("🔄[startup]: Initializing application...");
+    logger.info("🔄[startup]: Initializing application...");
 
     // Test database connection
     const dbConnected = await testConnection();
     if (!dbConnected) {
-      console.warn(
+      logger.warn(
         "⚠️[startup]: Database connection failed. Some features may not work."
       );
-      console.log(
-        "�[startup]: Run 'npm run db:init' to initialize the database"
+      logger.info(
+        "🔄[startup]: Run 'npm run db:init' to initialize the database"
       );
     } else {
-      console.log("✅[startup]: Database connection established");
+      logger.info("✅[startup]: Database connection established");
     }
 
     // Ensure default API key exists for local/dev
@@ -110,16 +111,16 @@ const startServer = async () => {
 
     // Start HTTP server
     const server = app.listen(port, () => {
-      console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
-      console.log(
+      logger.info(`⚡️[server]: Server is running at http://localhost:${port}`);
+      logger.info(
         `📖[docs]: API documentation will be available at http://localhost:${port}/api-docs`
       );
-      console.log(
+      logger.info(
         `🔍[health]: Health check available at http://localhost:${port}/health`
       );
 
       if (!dbConnected) {
-        console.log(
+        logger.info(
           "💡[server]: To initialize the database, run: npm run db:init"
         );
       }
@@ -127,16 +128,16 @@ const startServer = async () => {
 
     // Graceful shutdown
     const gracefulShutdown = async () => {
-      console.log(
+      logger.info(
         "📱[shutdown]: Received shutdown signal, closing server gracefully..."
       );
 
       server.close(async () => {
-        console.log("🔌[shutdown]: HTTP server closed.");
+        logger.info("🔌[shutdown]: HTTP server closed.");
 
         try {
           await closePool();
-          console.log("💾[shutdown]: Database connections closed.");
+          logger.info("💾[shutdown]: Database connections closed.");
           process.exit(0);
         } catch (error) {
           console.error("❌[shutdown]: Error during database shutdown:", error);

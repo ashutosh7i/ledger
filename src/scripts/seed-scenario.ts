@@ -1,6 +1,7 @@
 import { insert, findWhere } from "@/repositories/base.repository";
 import { initializeDatabase } from "@/services/database-init.service";
 import { testConnection, closePool } from "@/services/database.service";
+import logger from "@/utils/logger";
 
 async function ensureAccount(code: string, name: string, type: string) {
   const existing = await findWhere<any>("accounts", { code });
@@ -63,9 +64,9 @@ async function main() {
       { account_id: cash, credit_cents: 20000 },
     ]);
 
-    console.log("✓ Starter scenario seeded.");
+    logger.info("✓ Starter scenario seeded.");
   } catch (e) {
-    console.error("Seed failed", e);
+    logger.error("Seed failed", e);
     process.exitCode = 1;
   } finally {
     await closePool();

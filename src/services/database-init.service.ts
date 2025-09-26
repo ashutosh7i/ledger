@@ -7,10 +7,11 @@
  */
 
 import { execute, query } from "@/services/database.service";
+import logger from "@/utils/logger";
 
 // Initialize the database with all required tables
 export async function initializeDatabase(): Promise<void> {
-  console.log("🔄[database]: Initializing database tables...");
+  logger.info("🔄[database]: Initializing database tables...");
 
   try {
     // Create tables in dependency order
@@ -20,9 +21,9 @@ export async function initializeDatabase(): Promise<void> {
     await createIdempotencyKeysTable();
     await createApiKeysTable();
 
-    console.log("✅[database]: Database initialization completed successfully");
+    logger.info("✅[database]: Database initialization completed successfully");
   } catch (error) {
-    console.error("❌[database]: Database initialization failed:", error);
+    logger.error("❌[database]: Database initialization failed:", error);
     throw error;
   }
 }
@@ -43,7 +44,7 @@ async function createAccountsTable(): Promise<void> {
   `;
 
   await execute(sql);
-  console.log("✓ Accounts table created/verified");
+  logger.info("✓ Accounts table created/verified");
 }
 
 // Create the journal_entries table
@@ -64,7 +65,7 @@ async function createJournalEntriesTable(): Promise<void> {
   `;
 
   await execute(sql);
-  console.log("✓ Journal entries table created/verified");
+  logger.info("✓ Journal entries table created/verified");
 }
 
 // Create the journal_lines table with double-entry constraints
@@ -91,7 +92,7 @@ async function createJournalLinesTable(): Promise<void> {
   `;
 
   await execute(sql);
-  console.log("✓ Journal lines table created/verified");
+  logger.info("✓ Journal lines table created/verified");
 }
 
 // Create the idempotency_keys table for request deduplication
@@ -109,7 +110,7 @@ async function createIdempotencyKeysTable(): Promise<void> {
   `;
 
   await execute(sql);
-  console.log("✓ Idempotency keys table created/verified");
+  logger.info("✓ Idempotency keys table created/verified");
 }
 
 // Create the api_keys table for authentication
@@ -129,12 +130,12 @@ async function createApiKeysTable(): Promise<void> {
   `;
 
   await execute(sql);
-  console.log("✓ API keys table created/verified");
+  logger.info("✓ API keys table created/verified");
 }
 
 // Drop all tables in correct order (for testing/reset)
 export async function dropAllTables(): Promise<void> {
-  console.log("🗑️[database]: Dropping all tables...");
+  logger.info("🗑️[database]: Dropping all tables...");
 
   // Order matters due to foreign key constraints
   const tables = [
@@ -149,11 +150,11 @@ export async function dropAllTables(): Promise<void> {
 
   for (const table of tables) {
     await execute(`DROP TABLE IF EXISTS ${table}`);
-    console.log(`✓ Dropped table: ${table}`);
+    logger.info(`✓ Dropped table: ${table}`);
   }
 
   await execute("SET FOREIGN_KEY_CHECKS = 1");
-  console.log("✅[database]: All tables dropped successfully");
+  logger.info("✅[database]: All tables dropped successfully");
 }
 
 // Check if all required tables exist

@@ -9,6 +9,7 @@ import {
 } from "@/repositories/base.repository";
 import { idempotencyService } from "@/services/idempotency.service";
 import { query } from "@/services/database.service";
+import logger from "@/utils/logger";
 
 export async function createJournalEntry(
   req: Request,
@@ -23,6 +24,7 @@ export async function createJournalEntry(
       !Array.isArray(payload?.lines) ||
       payload.lines.length < 2
     ) {
+      logger.warn("[journal.controller]: Invalid journal entry payload");
       res
         .status(400)
         .json({ error: "date, narration and at least 2 lines are required" });
@@ -34,6 +36,7 @@ export async function createJournalEntry(
     const today = new Date();
     const date = new Date(payload.date);
     if (Number.isNaN(date.getTime()) || date > today) {
+      logger.warn("[journal.controller]: Invalid or future date in payload");
       res.status(400).json({ error: "Invalid or future date is not allowed" });
       return;
     }
@@ -55,12 +58,14 @@ export async function createJournalEntry(
         const c = (line as any).credit ?? (line as any).credit_cents ?? 0;
 
         if (!Number.isInteger(d) || !Number.isInteger(c) || d < 0 || c < 0) {
+          logger.warn("[journal.controller]: Invalid debit or credit amount in line");
           throw Object.assign(
             new Error("Amounts must be integer minor units >= 0"),
             { status: 400 }
           );
         }
         if (!accountId || (d > 0 && c > 0) || (d === 0 && c === 0)) {
+          logger.warn("[journal.controller]: Invalid account or debit/credit specification in line");
           throw Object.assign(
             new Error(
               "Each line must have a valid account and exactly one of debit or credit > 0"
@@ -84,6 +89,7 @@ export async function createJournalEntry(
       ([_, count]) => count > 1
     );
     if (duplicateAccounts.length > 0) {
+      logger.warn("[journal.controller]: Duplicate accounts in journal entry lines");
       res
         .status(400)
         .json({
@@ -94,6 +100,7 @@ export async function createJournalEntry(
     }
 
     if (debitSum !== creditSum) {
+      logger.warn("[journal.controller]: Unbalanced journal entry");
       res.status(400).json({ error: "Debits and credits must balance" });
       return;
     }
@@ -106,6 +113,7 @@ export async function createJournalEntry(
       if (rows.length === 0) missingAccounts.push(id);
     }
     if (missingAccounts.length) {
+      logger.warn(`[journal.controller]: Missing accounts: ${missingAccounts.join(",")}`);
       res
         .status(400)
         .json({ error: `Invalid account_id(s): ${missingAccounts.join(",")}` });
@@ -159,6 +167,7 @@ export async function createJournalEntry(
     res.status(201).json({ data: created });
     return;
   } catch (err) {
+    logger.error("[journal.controller]: Error creating journal entry", err);
     next(err);
     return;
   }
@@ -174,6 +183,7 @@ export async function getJournalEntry(
     const id = Number(req.params.id);
     const entry = await findById<JournalEntryRow>("journal_entries", id);
     if (!entry) {
+      logger.warn(`[journal.controller]: Journal entry not found for id ${id}`);
       res.status(404).json({ error: "Journal entry not found" });
       return;
     }
@@ -186,6 +196,7 @@ export async function getJournalEntry(
     res.json({ data: { ...entry, lines } });
     return;
   } catch (err) {
+    logger.error("[journal.controller]: Error fetching journal entry", err);
     next(err);
     return;
   }

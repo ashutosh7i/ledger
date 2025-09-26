@@ -10,6 +10,7 @@ import {
   findWhere,
   insert,
 } from "@/repositories/base.repository";
+import logger from "@/utils/logger";
 
 const TABLE = "accounts";
 
@@ -26,6 +27,7 @@ export async function listAccounts(
     res.json({ data: rows });
     return;
   } catch (err) {
+    logger.error("[accounts.controller]: Error listing accounts", err);
     next(err);
     return;
   }
@@ -46,6 +48,7 @@ export async function getAccount(
     res.json({ data: row });
     return;
   } catch (err) {
+    logger.error("[accounts.controller]: Error fetching account", err);
     next(err);
     return;
   }
@@ -74,6 +77,7 @@ export async function createAccount(
     res.status(201).json({ data: created });
     return;
   } catch (err) {
+    logger.error("[accounts.controller]: Error creating account", err);
     next(err);
     return;
   }
@@ -94,6 +98,7 @@ export async function getAccountBalance(
     const accounts = await findWhere<AccountRow>(TABLE, { code });
     const account = accounts[0];
     if (!account) {
+      logger.warn(`[accounts.controller]: Account not found for code ${code}`);
       res.status(404).json({ error: "Account not found" });
       return;
     }
@@ -124,6 +129,7 @@ export async function getAccountBalance(
     });
     return;
   } catch (err) {
+    logger.error("[accounts.controller]: Error fetching account balance", err);
     next(err);
     return;
   }

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { query } from "@/services/database.service";
+import logger from "@/utils/logger";
 
 // GET /reports/trial-balance?from=YYYY-MM-DD&to=YYYY-MM-DD
 export async function getTrialBalance(
@@ -11,6 +12,9 @@ export async function getTrialBalance(
     const from = req.query.from as string | undefined;
     const to = req.query.to as string | undefined;
     if (!from || !to) {
+      logger.warn(
+        "[reports.controller]: Missing 'from' or 'to' query parameter"
+      );
       res.status(400).json({ error: "from and to are required" });
       return;
     }
@@ -47,6 +51,7 @@ export async function getTrialBalance(
     res.json({ from, to, accounts, totals });
     return;
   } catch (err) {
+    logger.error("[reports.controller]: Error generating trial balance", err);
     next(err);
     return;
   }

@@ -1,6 +1,7 @@
 import { dbInit } from "@/services/database-init.service";
 import { testConnection, closePool } from "@/services/database.service";
 import { ensureDefaultApiKey } from "@/services/security.service";
+import logger from "@/utils/logger";
 
 /**
  * Database reset script
@@ -8,45 +9,45 @@ import { ensureDefaultApiKey } from "@/services/security.service";
  */
 async function resetDatabase() {
   try {
-    console.log("🔄[reset]: Starting database reset...");
+    logger.info("🔄[reset]: Starting database reset...");
 
     // Test database connection
-    console.log("🔌[reset]: Testing database connection...");
+    logger.info("🔌[reset]: Testing database connection...");
     const dbConnected = await testConnection();
 
     if (!dbConnected) {
-      console.error(
+      logger.error(
         "❌[reset]: Database connection failed. Please check your database configuration."
       );
       process.exit(1);
     }
 
-    console.log("✅[reset]: Database connection established");
+    logger.info("✅[reset]: Database connection established");
 
     // Drop all tables
-    console.log("🗑️[reset]: Dropping all existing tables...");
+    logger.info("🗑️[reset]: Dropping all existing tables...");
     await dbInit.dropAllTables();
 
     // Recreate all tables
-    console.log("🔧[reset]: Creating database tables...");
+    logger.info("🔧[reset]: Creating database tables...");
     await dbInit.initializeDatabase();
 
-    console.log("✅[reset]: Database reset completed successfully!");
-    console.log(
+    logger.info("✅[reset]: Database reset completed successfully!");
+    logger.info(
       "🚀[reset]: You can now start the application with 'npm run dev'"
     );
     // Ensure default API key is set
     await ensureDefaultApiKey();
   } catch (error) {
-    console.error("❌[reset]: Database reset failed:", error);
+    logger.error("❌[reset]: Database reset failed:", error);
     process.exit(1);
   } finally {
     // Close database connections
     try {
       await closePool();
-      console.log("🔌[reset]: Database connections closed");
+      logger.info("🔌[reset]: Database connections closed");
     } catch (error) {
-      console.error("⚠️[reset]: Error closing database connections:", error);
+      logger.error("⚠️[reset]: Error closing database connections:", error);
     }
     process.exit(0);
   }
