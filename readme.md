@@ -507,3 +507,14 @@ S D:\Project> npm run test:new
 
 ✅ Trial balance is correct: Debits = Credits = 510000
 ```
+
+## Screenshot of demo app
+
+![Ledger Demo App](./public/ss.png)
+
+---
+
+### final verdict
+By creating this project, I have gained a deeper understanding of accounting principles and how to implement them in a software system. I also got to learn and implement best practices for building robust APIs, Implementing idempotency, Jest, contract first API design, repository pattern, and more.
+
+> keep learning, keep building!✨
