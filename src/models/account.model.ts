@@ -1,6 +1,7 @@
 import { RowDataPacket } from "mysql2/promise";
 
 import { AccountType } from "@/types/accountType";
+export { AccountType };
 
 export interface AccountRow extends RowDataPacket {
   id: number;

@@ -3,15 +3,12 @@ import {
   AccountRow,
   AccountType,
   CreateAccountDTO,
-  UpdateAccountDTO,
 } from "@/models/account.model";
 import {
   findAll,
   findById,
   findWhere,
   insert,
-  updateById,
-  deleteById,
 } from "@/repositories/base.repository";
 
 const TABLE = "accounts";
@@ -82,50 +79,6 @@ export async function createAccount(
   }
 }
 
-export async function updateAccount(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  try {
-    const id = Number(req.params.id);
-    const body: UpdateAccountDTO = req.body || {};
-    const row = await findById<AccountRow>(TABLE, id);
-    if (!row) {
-      res.status(404).json({ error: "Account not found" });
-      return;
-    }
-
-    await updateById(TABLE, id, body as any);
-    const updated = await findById<AccountRow>(TABLE, id);
-    res.json({ data: updated });
-    return;
-  } catch (err) {
-    next(err);
-    return;
-  }
-}
-
-export async function deleteAccount(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  try {
-    const id = Number(req.params.id);
-    const row = await findById<AccountRow>(TABLE, id);
-    if (!row) {
-      res.status(404).json({ error: "Account not found" });
-      return;
-    }
-    await deleteById(TABLE, id);
-    res.status(204).send();
-    return;
-  } catch (err) {
-    next(err);
-    return;
-  }
-}
 
 // GET /accounts/:code/balance?as_of=YYYY-MM-DD
 import { query } from "@/services/database.service";

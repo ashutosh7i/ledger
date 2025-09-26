@@ -38,6 +38,7 @@ export async function createJournalEntry(
       return;
     }
 
+
     // Accept either account_code+debit/credit or legacy account_id+debit_cents/credit_cents
     const normalizedLines = await Promise.all(
       payload.lines.map(async (line) => {
@@ -73,6 +74,24 @@ export async function createJournalEntry(
         return { account_id: accountId, debit_cents: d, credit_cents: c };
       })
     );
+
+    // Reject if any account appears more than once in the lines array
+    const accountIdCounts = normalizedLines.reduce((acc, l) => {
+      acc[l.account_id] = (acc[l.account_id] || 0) + 1;
+      return acc;
+    }, {} as Record<number, number>);
+    const duplicateAccounts = Object.entries(accountIdCounts).filter(
+      ([_, count]) => count > 1
+    );
+    if (duplicateAccounts.length > 0) {
+      res
+        .status(400)
+        .json({
+          error:
+            "Each account can only appear once per journal entry (no duplicate debit/credit for same account)",
+        });
+      return;
+    }
 
     if (debitSum !== creditSum) {
       res.status(400).json({ error: "Debits and credits must balance" });

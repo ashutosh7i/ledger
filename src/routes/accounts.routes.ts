@@ -1,13 +1,11 @@
 import { Router } from "express";
-import { apiKeyAuth } from "@/middlewares/auth.middleware";
 import {
   listAccounts,
   getAccount,
   createAccount,
-  updateAccount,
-  deleteAccount,
   getAccountBalance,
 } from "@/controllers/accounts.controller";
+import { apiKeyAuth } from "@/middlewares/auth.middleware";
 
 const router = Router();
 
@@ -15,8 +13,6 @@ const router = Router();
 router.get("/", listAccounts);
 router.get("/:id", getAccount);
 router.post("/", apiKeyAuth, createAccount);
-router.put("/:id", apiKeyAuth, updateAccount);
-router.delete("/:id", apiKeyAuth, deleteAccount);
 router.get("/:code/balance", getAccountBalance);
 
 export default router;

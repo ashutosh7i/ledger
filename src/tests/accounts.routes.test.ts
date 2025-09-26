@@ -62,20 +62,4 @@ describe("Accounts routes", () => {
       .expect(200);
     expect(res.body.data.id).toBe(createdId);
   });
-
-  test("PUT /accounts/:id updates name", async () => {
-    const res = await request(app)
-      .put(`/api/v1/accounts/${createdId}`)
-      .set("x-api-key", API_KEY)
-      .send({ name: "Cash on Hand" })
-      .expect(200);
-    expect(res.body.data.name).toBe("Cash on Hand");
-  });
-
-  test("DELETE /accounts/:id removes account", async () => {
-    await request(app)
-      .delete(`/api/v1/accounts/${createdId}`)
-      .set("x-api-key", API_KEY)
-      .expect(204);
-  });
 });

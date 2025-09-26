@@ -88,6 +88,23 @@ describe("Assignment endpoints and scenario", () => {
     expect(rUnbalanced.status).toBe(400);
   });
 
+  test("Reject duplicate account in journal entry", async () => {
+    const payload = {
+      date: "2025-01-10",
+      narration: "Invalid duplicate account",
+      lines: [
+        { account_code: "1001", debit: 500 },
+        { account_code: "1001", credit: 500 },
+      ],
+    };
+    const res = await request(app)
+      .post("/api/v1/journal/journal-entries")
+      .set("x-api-key", API_KEY)
+      .send(payload);
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/only appear once/);
+  });
+
   test("Complete starter scenario then check balances and trial balance", async () => {
     // Cash sale: Dr Cash 50,000; Cr Sales 50,000 (2025-01-05)
     await request(app)
